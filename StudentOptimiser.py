@@ -65,8 +65,8 @@ def getBest(order, boosts, remainingStudents):
     best_boost_per_cost = 0
     best_i = -1
     best_cost  = 0
-    for i in xrange(len(order)):
-        if (i in xrange(3,6) and order[i] == 8) or (i is 6 and order[i] == 6):
+    for i in range(len(order)):
+        if (i in range(3,6) and order[i] == 8) or (i is 6 and order[i] == 6):
             continue
         if i == 6 and remainingStudents >= 2:
             boost_per_cost = 0.05*(order[0]*boosts[0] + order[1]*boosts[1] + order[2]*boosts[2] + order[3]*boosts[3] + order[4]*boosts[4] + order[5]*boosts[5])
@@ -120,8 +120,8 @@ def calc(students, t, ft, stars, AdBonus = True, IgnoreTheories = False, Acceler
     return order, boosts, total
 
 def printcalc(order,total):
-    print "e%f" %(total)
-    print order
+    print("e%f" %(total))
+    print(order)
 
 if __name__ == "__main__":
 ##    students = 18
