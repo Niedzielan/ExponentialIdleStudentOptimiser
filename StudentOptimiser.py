@@ -91,7 +91,7 @@ def calc(students, t, ft, stars, AdBonus = True, IgnoreTheories = False, Acceler
     log_10_dmu = ft
     log_10_db = (ft*0.8) - math.log(4*(10**6),10)
     #old dpsi = 2**(ft/25.0-1) -0.5
-    log_10_dpsi = (1000/25.0-1)*math.log(2,10)
+    log_10_dpsi = (ft/25.0-1)*math.log(2,10)
 
     dt = getdt(ft)
 
