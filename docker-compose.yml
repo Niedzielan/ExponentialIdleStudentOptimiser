@@ -1,0 +1,13 @@
+services:
+  exponentialidle_api:
+    build:
+        context: ./
+        dockerfile: Dockerfile
+    image: exponentialidle_api:1.0
+    restart: on-failure
+    ports:
+      - 5001:80
+    container_name: exponentialidle_api
+networks:
+    default:
+        name: optimiser-default

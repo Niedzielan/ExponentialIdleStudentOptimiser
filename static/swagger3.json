@@ -1,0 +1,78 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "description": "Optimiser for exponential idle",
+        "version": "1.0.0",
+        "title": "Student Optimiser"
+    },
+    "paths": {
+        "/OptimiseStudents": {
+            "post": {
+                "description": "Returns the optimal student arrangement and phi value.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "ft": {
+                                        "type": "float",
+                                        "example": "4995"
+                                    },
+                                    "t": {
+                                        "type": "float",
+                                        "example": "1.5e9"
+                                    },
+                                    "students": {
+                                        "type": "integer",
+                                        "example": "18"
+                                    },
+                                    "stars": {
+                                        "type": "float",
+                                        "example": "3000000"
+                                    },
+                                    "AdBonus": {
+                                        "type": "boolean"
+                                    },
+                                    "IgnoreTheories": {
+                                        "type": "boolean"
+                                    },
+                                    "Acceleration": {
+                                        "type": "boolean"
+                                    },
+                                    "AccelerationBonus":{
+                                        "type": "boolean"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The optimised result.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "order": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "integer"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "float"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
