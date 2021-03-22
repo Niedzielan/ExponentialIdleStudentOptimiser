@@ -51,9 +51,21 @@ def getcost(num):
     else:
         return (num**2 + 2*num)/4
 
-def getboosts(ft,):
-    dt = getdt(ft)
-    return (math.log(dt,10), 0.7*math.log(1+t,10), math.log(stars,10), log_10_db/(100*log_10_db)**0.5, log_10_dmu/1300.0, log_10_dpsi/225*(log_10_dpsi**0.5),0.1) #old math.log(1+dpsi,10)/225*(math.log(10+dpsi,10)**0.5)
+def getnextcost(num):
+    return getcost(num+1)-getcost(num)
+
+def getcostOrder(order):
+    cost = 0
+    for i in range(len(order)-1):
+        cost += getcost(order[i])
+    cost += 2*order[6]
+    return cost
+
+def getTotalBoost(order, boosts):
+    res = 0
+    for i in range(6):
+        res += order[i]*boosts[i]
+    return (1+order[6]*0.1)*res
 
 def getdt(ft):
     dt_speed_upgrades = ft/15.0/math.log(2,10)
@@ -61,33 +73,57 @@ def getdt(ft):
     dt_levels = ft/math.log(4,10)
     return dt_speed*dt_levels
 
-def getBest(order, boosts, remainingStudents):
+def getMaxBuy():
+    return [-1, -1, -1, 8, 8, 8, 6]
+
+def getAllForks(order, students, highest, boosts, required = [0]*7):
+    maxBuy = getMaxBuy()
+    tmp = []
+    for i in range(7):
+        tmp1 = [x for x in order]
+        tmp1[i] = order[i] +1
+        if maxBuy[i] > 0:
+            tmp1[i] = min(maxBuy[i],tmp1[i] )
+        if getTotalBoost(tmp1, boosts) < getTotalBoost(highest, boosts):
+            continue        
+        tmp2 = [x for x in required]
+        tmp2[i] = order[i]+1
+        if maxBuy[i] > 0:
+            tmp2[i] = min(maxBuy[i],tmp1[i] )
+        if getcostOrder(tmp2) > students:
+            continue
+        if tmp2 not in tmp:
+            tmp.append(tmp2)
+    return tmp
+
+def getBestTotal(order, boosts, totalStudents, highest = [0]*7):
+    remainingStudents = totalStudents - getcostOrder(order)
     best_boost_per_cost = 0
     best_i = -1
-    best_cost  = 0
     for i in range(len(order)):
         if (i in range(3,6) and order[i] == 8) or (i is 6 and order[i] == 6):
             continue
-        if i == 6 and remainingStudents >= 2:
+        boost_per_cost = 0
+        cost = 0
+        if i == 6:
             boost_per_cost = 0.05*(order[0]*boosts[0] + order[1]*boosts[1] + order[2]*boosts[2] + order[3]*boosts[3] + order[4]*boosts[4] + order[5]*boosts[5])
             cost = 2
-        elif i == 6:
-            continue
         else:
-            cost = (getcost(order[i]+1)-getcost(order[i]))
-            if cost > remainingStudents:
-                continue
+            cost = getnextcost(order[i])
             extra_boost = (1+order[6]*boosts[6])*boosts[i]
             boost_per_cost = extra_boost/cost
         if boost_per_cost > best_boost_per_cost:
+            if cost > remainingStudents:
+                continue
             best_boost_per_cost = boost_per_cost
             best_i = i
-            best_cost = cost
     if best_i != -1:
         order[best_i] += 1
-        return order, remainingStudents-best_cost
+        if getTotalBoost(order, boosts) > getTotalBoost(highest, boosts):
+            highest = [x for x in order]
+        return order, boosts, totalStudents, highest
     else:
-        return order, 0
+        return order, boosts, 0, highest
 
 def calc(students, t, ft, stars, AdBonus = True, IgnoreTheories = False, Acceleration = False, AccelerationBonus = 2.8538):
     log_10_dmu = ft
@@ -115,15 +151,36 @@ def calc(students, t, ft, stars, AdBonus = True, IgnoreTheories = False, Acceler
             while students >= 5:
                 students -= 5
 
-    remaining_students = students
-    while remaining_students > 0:
-        order, remaining_students = getBest(order, boosts, remaining_students)
-    total = (1+order[6]*boosts[6])*(order[0]*boosts[0] + order[1]*boosts[1] + order[2]*boosts[2] + order[3]*boosts[3] + order[4]*boosts[4] + order[5]*boosts[5])
+    temp_students = students
+    while temp_students > 0:
+        order, boosts, temp_students, highest = getBestTotal(order, boosts, temp_students, order)
+    highest = order
+
+    possibles = getAllForks(highest, students, highest, boosts)
+    done_possibles = []
+
+    while len(possibles) > 0:
+        possible = possibles.pop(0)
+        done_possibles.append([x for x in possible])
+        order = [x for x in possible]
+        total_students = students
+        while total_students > 0:
+            order, boosts, total_students, highest = getBestTotal(order, boosts, total_students, highest)
+        tmp_possibles = getAllForks(order, students, highest, boosts, possible)
+        for tmp_possible in tmp_possibles:
+            if tmp_possible in possibles or tmp_possible in done_possibles:
+                continue
+            else:
+                possibles.append(tmp_possible)
+
+    order = highest
+        
+    total = getTotalBoost(order, boosts)
     return order, boosts, total
 
 def printcalc(order,total):
-    print("e%f" %(total))
-    print(order)
+    print "e%f" %(total)
+    print order
 
 if __name__ == "__main__":
 ##    students = 18
@@ -131,10 +188,10 @@ if __name__ == "__main__":
 ##    ft = 4995
 ##    stars = 3000000
     test_dict = {
-        "students": 18,
+        "students": 13,
         "t": 1.5e9,
-        "ft": 4995,
-        "stars": 3000000
+        "ft": 10500,
+        "stars": 2400000
                  }
 
     test_json = json.dumps(test_dict)
