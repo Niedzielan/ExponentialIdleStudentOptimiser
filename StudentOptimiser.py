@@ -71,6 +71,8 @@ def getBest(order, boosts, remainingStudents):
         if i == 6 and remainingStudents >= 2:
             boost_per_cost = 0.05*(order[0]*boosts[0] + order[1]*boosts[1] + order[2]*boosts[2] + order[3]*boosts[3] + order[4]*boosts[4] + order[5]*boosts[5])
             cost = 2
+        elif i == 6:
+            continue
         else:
             cost = (getcost(order[i]+1)-getcost(order[i]))
             if cost > remainingStudents:
