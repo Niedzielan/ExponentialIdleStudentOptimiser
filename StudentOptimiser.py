@@ -35,14 +35,22 @@ def readJSONinput(js):
         AccelerationBonus = float(json_string["AccelerationBonus"])
     else:
         AccelerationBonus = 2.8538
-    return students, t, ft, stars, AdBonus, IgnoreTheories, Acceleration, AccelerationBonus
+    if "Highest_Theory_bought" in json_string:
+        Highest_Theory_bought = int(json_string["Highest_Theory_bought"])
+    else:
+        Highest_Theory_bought = 0
+    if "Theory_Speed_upgrades" in json_string:
+        Theory_Speed_upgrades = int(json_string["Theory_Speed_upgrades"])
+    else:
+        Theory_Speed_upgrades = 0
+    return students, t, ft, stars, Highest_Theory_bought, Theory_Speed_upgrades, AdBonus, IgnoreTheories, Acceleration, AccelerationBonus
 
 def outputJSON(order, total):
     return json.dumps({"order":order, "total":total})
 
 def calcJSON(js):
-    students, t, ft, stars, AdBonus, IgnoreTheories, Acceleration, AccelerationBonus = readJSONinput(js)
-    order, boosts, total = calc(students, t, ft, stars, AdBonus, IgnoreTheories, Acceleration, AccelerationBonus)
+    students, t, ft, stars, Highest_Theory_bought, Theory_Speed_upgrades, AdBonus, IgnoreTheories, Acceleration, AccelerationBonus = readJSONinput(js)
+    order, boosts, total = calc(students, t, ft, stars, Highest_Theory_bought, Theory_Speed_upgrades, AdBonus, IgnoreTheories, Acceleration, AccelerationBonus)
     return outputJSON(order, total)
 
 def getcost(num):
@@ -125,7 +133,7 @@ def getBestTotal(order, boosts, totalStudents, highest = [0]*7):
     else:
         return order, boosts, 0, highest
 
-def calc(students, t, ft, stars, AdBonus = True, IgnoreTheories = False, Acceleration = False, AccelerationBonus = 2.8538):
+def calc(students, t, ft, stars, Highest_Theory_bought = 0, Theory_Speed_upgrades = 0, AdBonus = True, IgnoreTheories = False, Acceleration = False, AccelerationBonus = 2.8538):
     log_10_dmu = ft
     log_10_db = (ft*0.8) - math.log(4*(10**6),10)
     #old dpsi = 2**(ft/25.0-1) -0.5
@@ -143,13 +151,20 @@ def calc(students, t, ft, stars, AdBonus = True, IgnoreTheories = False, Acceler
     order = [0]*7
     cost = 0
 
+    studentCosts = [[20, 5, 5, 5, 5, 5, 5, 5, 20], [10, 10, 10]]
+    temp_students = students
     if not IgnoreTheories:
-        if students >=60:
-            students -= 60
-        elif students >= 20:
-            students -= 20
-            while students >= 5:
-                students -= 5
+        for i in range(Highest_Theory_bought):
+            temp_students -= studentCosts[0][i]
+        if Highest_Theory_bought >= 8:
+            for j in range(Theory_Speed_upgrades):
+                temp_students -= studentCosts[1][j]
+        elif Theory_Speed_upgrades > 0:
+            print("Theory Speed upgrades will be ignored as Theory 8 has not been bought")
+    if temp_students < 0:
+        print("Not enough students for given Theories, continuing with IgnoreTheories assumed True")
+    else:
+        students = temp_students
 
     temp_students = students
     while temp_students > 0:
@@ -179,8 +194,9 @@ def calc(students, t, ft, stars, AdBonus = True, IgnoreTheories = False, Acceler
     return order, boosts, total
 
 def printcalc(order,total):
-    print "e%f" %(total)
-    print order
+    print("e%f" %(total))
+    print(order)
+    print("Total students spent: %d" %(getcostOrder(order)))
 
 if __name__ == "__main__":
 ##    students = 18
@@ -188,15 +204,16 @@ if __name__ == "__main__":
 ##    ft = 4995
 ##    stars = 3000000
     test_dict = {
-        "students": 13,
+        "students": 33,
         "t": 1.5e9,
         "ft": 10500,
-        "stars": 2400000
+        "stars": 2400000,
+        "Highest_Theory_bought":1
                  }
 
     test_json = json.dumps(test_dict)
     
-    students, t, ft, stars, AdBonus, IgnoreTheories, Acceleration, AccelerationBonus = readJSONinput(test_json)
+    students, t, ft, stars, Highest_Theory_bought, Theory_Speed_upgrades, AdBonus, IgnoreTheories, Acceleration, AccelerationBonus = readJSONinput(test_json)
     
-    order, boosts, total = calc(students, t, ft, stars, AdBonus, IgnoreTheories, Acceleration, AccelerationBonus)
+    order, boosts, total = calc(students, t, ft, stars, Highest_Theory_bought, Theory_Speed_upgrades, AdBonus, IgnoreTheories, Acceleration, AccelerationBonus)
     printcalc(order, total)
