@@ -135,9 +135,18 @@ def getBestTotal(order, boosts, totalStudents, highest = [0]*7):
 
 def calc(students, t, ft, stars, Highest_Theory_bought = 0, Theory_Speed_upgrades = 0, AdBonus = True, IgnoreTheories = False, Acceleration = False, AccelerationBonus = 2.8538):
     log_10_dmu = ft
-    log_10_db = (ft*0.8) - math.log(4*(10**6),10)
+    if ft < 100:
+        db = (10**ft)**0.8 / 4000000.0
+        log_10_db = math.log(db+10,10)
+        dpsi = 2**(ft/25.0-1) -0.5
+        log_10_dpsi = math.log(dpsi,10)
+    else:
+        #log_10_db = log( (10^ft)^0.8 + 4.0e7) - log(4.0e6)
+        log_10_db = (ft*0.8) - math.log(4*(10**6),10)
+        log_10_dpsi = (ft/25.0-1)*math.log(2,10)
     #old dpsi = 2**(ft/25.0-1) -0.5
-    log_10_dpsi = max(0,(ft/25.0-1)*math.log(2,10))
+    log_10_db = max(1,log_10_db)
+    log_10_dpsi = max(0,log_10_dpsi)
 
     dt = getdt(ft)
 
